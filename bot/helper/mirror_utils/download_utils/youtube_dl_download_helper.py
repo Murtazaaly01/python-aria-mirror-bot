@@ -19,7 +19,7 @@ class MyLogger:
         # Hack to fix changing changing extension
         match = re.search(r'.ffmpeg..Merging formats into..(.*?).$', msg)
         if match and not self.obj.is_playlist:
-            self.obj.name = match.group(1)
+            self.obj.name = match[1]
 
     @staticmethod
     def warning(msg):
@@ -155,10 +155,12 @@ class YoutubeDLHelper(DownloadHelper):
           self.opts['postprocessors'] = [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3','preferredquality': '192',}]
         else:
           self.opts['format'] = qual
-        if not self.is_playlist:
-            self.opts['outtmpl'] = f"{path}/{self.name}"
-        else:
-            self.opts['outtmpl'] = f"{path}/{self.name}/%(title)s.%(ext)s"
+        self.opts['outtmpl'] = (
+            f"{path}/{self.name}/%(title)s.%(ext)s"
+            if self.is_playlist
+            else f"{path}/{self.name}"
+        )
+
         self.__download(link)
 
     def cancel_download(self):
